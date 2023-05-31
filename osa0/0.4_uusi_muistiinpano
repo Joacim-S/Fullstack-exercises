@@ -1,0 +1,36 @@
+```mermaid
+sequenceDiagram
+    participant browser
+    participant server
+
+    browser->>server: POST https://studies.cs.helsinki.fi/exampleapp/new_note
+    activate server
+    Note right of server: The server adds the new note with a time stamp to the list of notes
+    server->>browser: Redirect /exampleapp/notes
+    deactivate server
+
+    browser->>server: GET https://studies.cs.helsinki.fi/exampleapp/notes
+    activate server
+    server->>browser: HTML document
+    deactivate server
+
+    browser->>server: https://studies.cs.helsinki.fi/exampleapp/main.css
+    activate server
+    server->>browser: the css file
+    deactivate server
+
+    browser->>server: GET https://studies.cs.helsinki.fi/exampleapp/main.js
+    activate server
+    server->>browser: the Javasrcipt file file
+    deactivate server
+
+    Note right of browser: The browser executes the JavaScript file, which fetcehs the JSON file
+
+    browser->>server: GET https://studies.cs.helsinki.fi/exampleapp/data.json
+    activate server
+    server->>browser: [{"content": "rrrrrr","date": "2023-05-30T20:53:35.003Z"}, ...]
+    deactivate server
+
+    Note right of browser: The browser executes the callback function for rendering the data
+
+```
