@@ -1,18 +1,25 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import contactService from './services/contacts'
 
 const Person = (props) => {
-  return <p>{props.name} {props.number}</p>
+  return <p>{props.name} {props.number} <button onClick={props.yeet}>delete</button></p>
 }
 
-const Fetch = ({persons, showAll, search}) => {
+
+
+const Fetch = ({persons, showAll, search, yeeter}) => {
   const personsToShow = showAll
   ? persons
   : persons.filter((person) => person.name.toLowerCase().includes(search.toLowerCase()))
 
   return (
     personsToShow.map(person =>
-    <Person key={person.name} name={person.name} number={person.number}/>
+    <Person key={person.id} 
+    name={person.name}
+    number={person.number}
+    yeet={() => {yeeter(person.id, person.name)}
+    }
+    />
     ))}
 
 const Form = (props) => {
@@ -46,12 +53,19 @@ const App = () => {
   const [showAll, setShowAll] = useState(true)
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data)
-      })
+        contactService
+        .getAll()
+        .then(initialPersons => {setPersons(initialPersons)})
   }, [])
+  
+  const yeetPerson = (id, name) => {
+    if (window.confirm('delete ' + name))
+    {
+    contactService
+    .yeetPerson(id)
+    setPersons(persons.filter((person) => person.id !== id))
+    }
+  }
 
   const handleSearchChange = (event) => {
     setShowAll(false)
@@ -67,19 +81,30 @@ const App = () => {
   }
 
   const addPerson = (event) => {
-    event.preventDefault()
-    if (persons.find(person => person.name===newName)) {
-      alert(`${newName} is already added to phonebook`)
-      return
-    }
     const personObject = {
       name: newName,
       number: newNumber
     }
-
-    setPersons(persons.concat(personObject))
-    setNewName('')
-    setNewNumber('')
+    event.preventDefault()
+    const old = persons.find(person => person.name===newName)
+    console.log(old)
+    if (old) {
+      if (window.confirm(`${newName} is already added to phonebook, replace the old number witha new one?`))
+      {
+        contactService
+        .replace(personObject, old.id)
+        .then(response => {
+        setPersons(persons.map(person => person.id !== old.id ? person : response))
+      })
+      }
+      return
+    }
+    contactService
+      .addNew(personObject)
+        .then(response => setPersons(persons.concat(response)))
+        setNewName('')
+        setNewNumber('')
+      
   }
 
   return (
@@ -97,7 +122,7 @@ const App = () => {
       <Form addPerson={addPerson} newName={newName} handleNameChange={handleNameChange}
       newNumber={newNumber} handleNumberChange={handleNumberChange}/>
       <h2>Numbers</h2>
-      <Fetch persons={persons} showAll={showAll} search={search} />
+      <Fetch persons={persons} showAll={showAll} search={search} yeeter={yeetPerson}/>
     </div>
   )
 
