@@ -5,7 +5,27 @@ const Person = (props) => {
   return <p>{props.name} {props.number} <button onClick={props.yeet}>delete</button></p>
 }
 
+const Notification = ({message, error}) => {
+  const notificationStyle = {
+    color: 'green',
+    fontSize: 24,
+    background: 'lightgrey',
+    borderStyle: 'solid',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+  }
+  if (error) {notificationStyle.color = 'red'}
+  if (message === null) {
+    return null
+  }
 
+  return (
+    <div style={notificationStyle}>
+      {message}
+    </div>
+  )
+}
 
 const Fetch = ({persons, showAll, search, yeeter}) => {
   const personsToShow = showAll
@@ -51,6 +71,14 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [search, setSearch] = useState('')
   const [showAll, setShowAll] = useState(true)
+  const [notification, setNotification] = useState(null)
+  const [errorStatus, setErrorStatus] = useState(false)
+  const timer = () => setTimeout(() => {
+    setErrorStatus(false)
+    setNotification(null)
+  }, 5000
+  )
+  
 
   useEffect(() => {
         contactService
@@ -64,6 +92,8 @@ const App = () => {
     contactService
     .yeetPerson(id)
     setPersons(persons.filter((person) => person.id !== id))
+    setNotification(`Deleted ${name}`)
+    timer()
     }
   }
 
@@ -87,7 +117,6 @@ const App = () => {
     }
     event.preventDefault()
     const old = persons.find(person => person.name===newName)
-    console.log(old)
     if (old) {
       if (window.confirm(`${newName} is already added to phonebook, replace the old number witha new one?`))
       {
@@ -95,6 +124,19 @@ const App = () => {
         .replace(personObject, old.id)
         .then(response => {
         setPersons(persons.map(person => person.id !== old.id ? person : response))
+        setNotification(`Updated ${newName}`)
+        timer()
+        setNewName('')
+        setNewNumber('')
+      })
+      .catch(error => {
+        setErrorStatus(true)
+        setPersons(persons.filter((person) => person.id !== old.id))
+        setNotification(`${newName} was already deleted from the server`)
+        timer()
+        setNewName('')
+        setNewNumber('')
+        return
       })
       }
       return
@@ -102,14 +144,16 @@ const App = () => {
     contactService
       .addNew(personObject)
         .then(response => setPersons(persons.concat(response)))
+        setNotification(`Added ${newName}`)
+        timer()
         setNewName('')
-        setNewNumber('')
-      
+        setNewNumber('') 
   }
 
   return (
     <div>
       <h1>Phonebook</h1>
+      <Notification message={notification} error={errorStatus} />
       <div>Filter shown with
         <input 
           value={search}
