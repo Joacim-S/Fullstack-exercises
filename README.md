@@ -8,3 +8,5 @@
 
 [osa2](https://github.com/Joacim-S/Fullstack-exercises/tree/main/osa2)
 * [kurssitiedot2](https://github.com/Joacim-S/Fullstack-exercises/tree/main/osa2/kurssitiedot2)
+* [puhelinluettelo](https://github.com/Joacim-S/Fullstack-exercises/tree/main/osa2/puhelinluettelo)
+* [maat](https://github.com/Joacim-S/Fullstack-exercises/tree/main/osa2/countries)
